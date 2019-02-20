@@ -1,0 +1,19 @@
+FROM microsoft/dotnet:2.2-sdk-alpine3.8 AS build
+WORKDIR /app
+
+# copy csproj and restore as distinct layers
+COPY *.sln .
+COPY ServersncodeDemo.Web/*.*.csproj ./ServersncodeDemo.Web/
+COPY ServersncodeDemo.Data/*.*.csproj ./ServersncodeDemo.Data/
+RUN dotnet restore
+
+# copy everything else and build app
+COPY ServersncodeDemo.Web/. ./ServersncodeDemo.Web/
+COPY ServersncodeDemo.Data/. ./ServersncodeDemo.Data/
+WORKDIR /app/Serversncodenetcore2.2_docker
+RUN dotnet publish -c Release -o out
+
+FROM microsoft/dotnet:2.2.0-aspnetcore-runtime  AS runtime
+WORKDIR /app
+COPY --from=build /app/Serversncodenetcore2.2_docker/out ./
+ENTRYPOINT ["dotnet", "Serversncodenetcore2.2_docker.dll"]
